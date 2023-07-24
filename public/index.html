@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="css/bootstrap-rtl.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <title>ورود به چت</title>
+</head>
+<body class="rtl text-center">
+
+<div class="container">
+
+    <form id="nicknameForm" class="form-signin">
+        <h1 class="h3 mb-5 mt-5 font-weight-normal">
+            لطفاً نام کاربری خود را وارد کنید
+        </h1>
+        <label for="nicknameInput" class="sr-only">نام کاربری</label>
+        <input
+                type="text"
+                name="nickname"
+                id="nicknameInput"
+                class="form-control"
+                placeholder="نام کاربری"
+                required
+                autofocus
+        />
+
+        <label class="mt-2" for="chatrooms">انتخاب چت روم</label>
+        <br />
+        <select name="chatrooms" id="chatrooms">
+                <option value="room1">چت روم تعیین تکلیف </option>
+                <option value="room2">چت روم شماره 2</option>
+                <option value="room3">چت روم شماره 3</option>
+        </select>
+
+        <input type="text" placeholder="رمز چت روم" id="password" name="password">
+
+        <button class="mt-3 btn-lg btn-primary btn-block" type="submit">
+            ورود به چت
+        </button>
+    </form>
+
+</div>
+
+<script>
+    const nicknameForm = document.getElementById("nicknameForm"),
+        nicknameInput = document.getElementById("nicknameInput"),
+        chatRoom = document.getElementById("chatrooms"),
+        chatRoomPass = document.getElementById("password")
+
+    const validPasswords = "TAEEN"
+
+    nicknameForm.addEventListener("submit", (e) => {  // when submitting form :
+        e.preventDefault();
+        if (nicknameInput.value) {
+            localStorage.setItem("nickname", nicknameInput.value); // nickname is key
+            localStorage.setItem("chatroom", chatRoom.value)
+
+            // for(let i = 0 ; i < validPasswords.length ; i++){
+                if(chatRoomPass.value === validPasswords && chatRoom.value == 'room1'){
+                    window.location.replace("/chat.html");
+                }
+                else{
+                    window.location.reload("chat.html")
+                }
+            // }
+        }
+    });
+</script>
+</body>
+</html>
+
+
+

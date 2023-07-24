@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <link rel="stylesheet" href="css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="css/bootstrap-rtl.min.css"/>
+    <link rel="stylesheet" href="css/styles.css"/>
+    <title>chat application</title>
+</head>
+<body class="rtl">
+
+<div class="bg-dark border border-secondary py-0">
+    <ul id="online-users-list"
+            class=" list-group
+                    list-group-horizontal
+                    overflow-auto
+                    mt-2" style="list-style-type: none;padding: 10px 20px;">
+    </ul>
+</div>
+
+<div class="container-fluid">
+
+    <div class="row">
+        <div
+             id="chatContainer"
+             class="col-12 bg-secondary h-100"
+             style="position: absolute; overflow-y: scroll; "
+        >
+            <ul id="chat-box" class="mt-3 list-unstyled" style="margin-bottom: 10% !important;"></ul>
+            <div id="feedback"></div>
+            <div class="d-flex justify-content-center fixed-bottom mt-0">
+                <form id="chatForm" class="form-group w-50 mb-3">
+                    <div class="input-group">
+                        <input
+                                type="text"
+                                name="message"
+                                id="messageInput"
+                                class="form-control"
+                                placeholder="متن پیام..."
+                        />
+                        <div class="input-group-prepend">
+                            <button
+                                    type="submit"
+                                    class="form-control btn btn-info"
+                            >
+                                ارسال پیام
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/socket.io.min.js"></script>
+<script>
+
+    const socket = io();
+
+    const messageInput = document.getElementById("messageInput"),
+        chatform = document.getElementById("chatForm"),
+        chatbox = document.getElementById("chat-box"),
+        feedback = document.getElementById("feedback"),
+        onlineUsers = document.getElementById("online-users-list"),
+        chatContainer = document.getElementById("chatContainer")
+
+    var today = new Date();
+    const hour = today.getHours();
+    const min = today.getMinutes();
+    const timee = hour + ':' + min
+
+
+    const nickname = localStorage.getItem("nickname"),
+        RoomNumber = localStorage.getItem("chatroom");
+
+    socket.emit("login", {nickname , RoomNumber})
+
+    chatform.addEventListener("submit", e => {
+        e.preventDefault();
+        if (messageInput.value) {
+            socket.emit("chat message", { // emitting (sending ) chat message to backend !
+                message: messageInput.value,
+                name: nickname,
+                time: timee,
+                RoomNumber
+            });
+            messageInput.value = ""
+        }
+    })
+
+    messageInput.addEventListener("keypress", () => {
+        socket.emit("typing", {name: nickname , RoomNumber})
+    })
+
+
+    socket.on("chat message", (data) => {  // on means listening
+        feedback.innerHTML = '';
+        chatbox.innerHTML += ` <li class="alert alert-light bg-secondary border-secondary  text-left" style="margin-top: -1% !important;margin-right: 2%;margin-left: 2%">
+                          <span
+                                class="font-weight-bold"
+                                style="font-size: 13pt;color: #f3fdff;"
+                                >${data.name}</span
+                            >
+                            <span
+                                class="
+                                    bg-secondary
+                                    font-italic font-weight-light
+                                    m-2
+                                    border-dark
+                                "
+                                style="font-size: 11pt;color: #f3fdff"
+                                >${data.time}</span
+                            >
+                            <span
+                                class="alert alert-info mt-2 bg-secondary border-secondary d-block mr-0 text-truncate"
+                                style="font-family: persian01;color: white;margin-right: -1% !important;max-width: 50%"
+                            >
+                            ${data.message}
+                            </span>
+                        </li>`
+        chatContainer.scrollTop = chatContainer.scrollHeight - chatContainer.clientHeight
+    })
+
+    socket.on("typing", data => {
+        feedback.innerHTML = `
+                    <p class="alert alert-warning w-25" style="margin-top: -7% !important;"><em>${data.name} is typing ...</em></p>
+                `
+    })
+
+    socket.on("online", (users) => {
+
+        onlineUsers.innerHTML = "";
+
+        for(const socketId in users){
+                if(RoomNumber === users[socketId].RoomNumber){
+                    onlineUsers.innerHTML += `
+           <li class="bg-secondary alert alert-light px-1 py-2 mx-1 text-white font-weight-bold">
+                ${users[socketId].nickname}
+           <span class="badge badge-info font-weight-bold">online</span>
+           </li>
+            `}
+            }
+    })
+
+</script>
+</body>
+</html>
